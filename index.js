@@ -11,9 +11,9 @@ const port = process.env.PORT || 5000;
 app.use(
   cors({
     origin: [
-      // "http://localhost:5173",
-      "https://car-doctor-9e8fc.web.app",
-      "https://car-doctor-9e8fc.firebaseapp.com",
+      "http://localhost:5173",
+      // "https://car-doctor-9e8fc.web.app",
+      // "https://car-doctor-9e8fc.firebaseapp.com",
     ],
     credentials: true,
   })
@@ -85,18 +85,20 @@ async function run() {
     app.post("/logout", async (req, res) => {
       const user = req.body;
       console.log("logging out", user);
-      res
-        .clearCookie("token", {
-          maxAge: 0,
-          secure: process.env.NODE_ENV === "production" ? true : false,
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-        })
-        .send({ success: true });
+      res.clearCookie("token", {}).send({ success: true });
     });
 
     // services related api
     app.get("/services", async (req, res) => {
-      const cursor = serviceCollection.find();
+      const filter = req.query;
+      console.log(filter);
+      const query = {};
+      const options = {
+        sort: {
+          price: filter.sort === "asc" ? 1 : -1,
+        },
+      };
+      const cursor = serviceCollection.find(query, options);
       const result = await cursor.toArray();
       res.send(result);
     });
